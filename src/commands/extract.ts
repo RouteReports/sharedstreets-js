@@ -1,4 +1,4 @@
-import {Command, flags} from '@oclif/command'
+import { Args, Command, Flags } from '@oclif/core'
 import { readFileSync, writeFileSync } from 'fs';
 
 import { TilePathParams, TileType, TilePathGroup } from '../index'
@@ -20,25 +20,27 @@ export default class Extract extends Command {
   ]
 
   static flags = {
-    help: flags.help({char: 'h'}),
+    help: Flags.help({char: 'h'}),
 
-    out: flags.string({char: 'o', description: 'output file'}),
-    'tile-source': flags.string({description: 'SharedStreets tile source', default: 'osm/planet-181224'}),
-    'tile-hierarchy': flags.integer({description: 'SharedStreets tile hierarchy', default: 6}),
-    metadata: flags.boolean({description: 'Include SharedStreets OpenStreetMap metadata in output', default: false}),
-    tiles: flags.boolean({description: 'Export list of tiles intersecting with bounding box', default: false})
+    out: Flags.string({char: 'o', description: 'output file'}),
+    'tile-source': Flags.string({description: 'SharedStreets tile source', default: 'osm/planet-181224'}),
+    'tile-hierarchy': Flags.integer({description: 'SharedStreets tile hierarchy', default: 6}),
+    metadata: Flags.boolean({description: 'Include SharedStreets OpenStreetMap metadata in output', default: false}),
+    tiles: Flags.boolean({description: 'Export list of tiles intersecting with bounding box', default: false})
 
   }
 
-  static args = [{name: 'file'}]
+  static args = {
+    firstArg: Args.string({name: 'file'})
+  }
 
   async run() {
-    const {args, flags} = this.parse(Extract)
+    const {args, flags} = await this.parse(Extract)
 
     if(flags.out)
       this.log(chalk.bold.keyword('green')('  🌏  Loading polygon...'));
 
-    var inFile = args.file;
+    var inFile = args.firstArg;
 
     var content = readFileSync(inFile);
     var polygon = JSON.parse(content.toLocaleString());
