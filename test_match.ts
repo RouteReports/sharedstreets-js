@@ -69,6 +69,7 @@ test("match points", async (t:any) => {
  
    if(BUILD_TEST_OUPUT) {
      var expected_1b_out:{} = JSON.stringify(matchedPointFeatureCollection_1b);
+     // @ts-ignore
      fs.writeFileSync(expected_1b_file, expected_1b_out);
    }
  
