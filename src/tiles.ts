@@ -19,8 +19,8 @@ const sphericalMercator = new SphericalMercator({
 
 const DEFAULT_ZLEVEL = 12;
 
-const SHST_ID_API_URL = 'https://api.sharedstreets.io/v0.1.0/id/';
-const SHST_TILE_URL = 'https://tiles.sharedstreets.io/';
+const SHST_ID_API_URL = process.env.SHST_ID_API_URL || 'https://api.sharedstreets.io/v0.1.0/id/';
+const SHST_TILE_URL = process.env.SHST_TILE_URL || 'https://tiles.sharedstreets.io/';
 
 const USE_LOCAL_CACHE = true;
 const SHST_TILE_CACHE_DIR = resolveHome('~/.shst/cache/tiles/');
