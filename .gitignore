@@ -68,3 +68,6 @@ typings/
 
 # cache directory
 shst
+
+data
+.DS_Store
