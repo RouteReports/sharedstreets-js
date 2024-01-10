@@ -23,7 +23,7 @@ const SHST_ID_API_URL = process.env.SHST_ID_API_URL || 'https://api.sharedstreet
 const SHST_TILE_URL = process.env.SHST_TILE_URL || 'https://tiles.sharedstreets.io/';
 
 const USE_LOCAL_CACHE = true;
-const SHST_TILE_CACHE_DIR = resolveHome('~/.shst/cache/tiles/');
+const SHST_TILE_CACHE_DIR = process.env.SHST_CACHE_DIR || resolveHome('~/.shst/cache/tiles/');
 
 export enum TileType {
     REFERENCE = 'reference',

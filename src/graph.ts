@@ -34,7 +34,7 @@ const DEFAULT_SEARCH_RADIUS = 10;
 const MIN_CONFIDENCE = 0.5;
 const OPTIMIZE_GRAPH = true;
 const USE_LOCAL_CACHE = true;
-const SHST_GRAPH_CACHE_DIR = resolveHome('~/.shst/cache/graphs/');
+const SHST_GRAPH_CACHE_DIR = process.env.SHST_CACHE_DIR || resolveHome('~/.shst/cache/graphs/');
 
 
 function getOSRMDirectory() {
