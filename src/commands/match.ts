@@ -872,7 +872,7 @@ async function matchLines(outFile, params, lines, flags) {
       var gisRef:SharedStreetsReference = forwardReference(line);
 			
       matchForward = await matcher.matchGeom(line);
-      if(matchForward && matchForward.score < matcher.searchRadius * 2) {
+      if(matchForward) {
         matchForwardSegments = getMatchedSegments(matchForward, gisRef);
       }
     }
@@ -885,7 +885,7 @@ async function matchLines(outFile, params, lines, flags) {
 
       var reversedLine = <turfHelpers.Feature<turfHelpers.LineString>>reverseLineString(line);
       matchBackward = await matcher.matchGeom(reversedLine);
-      if(matchBackward && matchBackward.score < matcher.searchRadius * 2) {
+      if(matchBackward) {
         matchBackwardSegments = getMatchedSegments(matchBackward, gisRef);
       }
     }
