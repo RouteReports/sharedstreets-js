@@ -855,50 +855,48 @@ export class Graph {
             if(matches['matchings'] &&  matches['matchings'].length > 0) {
                 
                 var match = matches['matchings'][0];
-                if(0 < match.confidence ) {
 
-                    // this is kind of convoluted due to the sparse info returned in the OSRM annotations...
-                    // write out sequence of nodes and edges as emitted from walking OSRM-returned nodes
-                    // finding the actual posistion and directionality of the OSRM-edge within the ShSt graph 
-                    // edge means that we have to snap start/end points in the OSRM geom
-                    
-                    //console.log(JSON.stringify(match.geometry));
+                // this is kind of convoluted due to the sparse info returned in the OSRM annotations...
+                // write out sequence of nodes and edges as emitted from walking OSRM-returned nodes
+                // finding the actual posistion and directionality of the OSRM-edge within the ShSt graph 
+                // edge means that we have to snap start/end points in the OSRM geom
+                
+                //console.log(JSON.stringify(match.geometry));
 
-                    var edgeCandidates;
-                    var nodes:number[] = [];
-                    var visitedNodes:Set<number> = new Set();
-                    // ooof this is brutual -- need to unpack legs and reduce list... 
-                    for(var leg of match['legs']) {
-                        //console.log(leg['annotation']['nodes'])
-                        for(var n of leg['annotation']['nodes']){ 
-                            if(!visitedNodes.has(n) || nodes.length == 0)
-                                nodes.push(n);
+                var edgeCandidates;
+                var nodes:number[] = [];
+                var visitedNodes:Set<number> = new Set();
+                // ooof this is brutual -- need to unpack legs and reduce list... 
+                for(var leg of match['legs']) {
+                    //console.log(leg['annotation']['nodes'])
+                    for(var n of leg['annotation']['nodes']){ 
+                        if(!visitedNodes.has(n) || nodes.length == 0)
+                            nodes.push(n);
 
-                            visitedNodes.add(n);
-                        }
+                        visitedNodes.add(n);
                     }
+                }
 
-                // then group node pairs into unique edges...
-                    var previousNode = null;
-                    for(var nodeId of nodes) {
-                        if(await this.db.has('node:' + nodeId)) {
+            // then group node pairs into unique edges...
+                var previousNode = null;
+                for(var nodeId of nodes) {
+                    if(await this.db.has('node:' + nodeId)) {
 
-                            if(previousNode) {
-                                if(await this.db.has('node-pair:' + nodeId + '-' + previousNode)) {
-                                    var edges = JSON.parse(await this.db.get('node-pair:' + nodeId + '-' + previousNode));
-                                    for(var edge of edges) {
-                                        
-                                        if(!visitedEdges.has(edge))
-                                            visitedEdgeList.push(edge);
+                        if(previousNode) {
+                            if(await this.db.has('node-pair:' + nodeId + '-' + previousNode)) {
+                                var edges = JSON.parse(await this.db.get('node-pair:' + nodeId + '-' + previousNode));
+                                for(var edge of edges) {
+                                    
+                                    if(!visitedEdges.has(edge))
+                                        visitedEdgeList.push(edge);
 
-                                        visitedEdges.add(edge);
-                                    }
+                                    visitedEdges.add(edge);
                                 }
                             }
-                            previousNode = nodeId;
                         }
-                    }     
-                }
+                        previousNode = nodeId;
+                    }
+                }     
             }
     
             if(visitedEdgeList.length > 0) {
