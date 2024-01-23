@@ -849,54 +849,44 @@ export class Graph {
                 });
             });
 
-            var visitedEdges:Set<string> = new Set();
             var visitedEdgeList:string[] = [];
             
             if(matches['matchings'] &&  matches['matchings'].length > 0) {
                 
                 var match = matches['matchings'][0];
 
-                // this is kind of convoluted due to the sparse info returned in the OSRM annotations...
-                // write out sequence of nodes and edges as emitted from walking OSRM-returned nodes
-                // finding the actual posistion and directionality of the OSRM-edge within the ShSt graph 
-                // edge means that we have to snap start/end points in the OSRM geom
+                // This is a bit messy - we need to go through the legs of the matched journey
+                // and find the edges that we passed through in order
+                // for each leg, iterate through the pairs of nodes and find the corresponding edge
+                // if it's the same as the previous edge, then ignore it
                 
                 //console.log(JSON.stringify(match.geometry));
-
-                var edgeCandidates;
-                var nodes:number[] = [];
-                var visitedNodes:Set<number> = new Set();
+                var previousEdge = null;
                 // ooof this is brutual -- need to unpack legs and reduce list... 
                 for(var leg of match['legs']) {
                     //console.log(leg['annotation']['nodes'])
-                    for(var n of leg['annotation']['nodes']){ 
-                        if(!visitedNodes.has(n) || nodes.length == 0)
-                            nodes.push(n);
+                    const nodes = leg['annotation']['nodes']
+                    for(var i=0; i < nodes.length - 1; i++){
+                      const prev = nodes[i];
+                      const next = nodes[i + 1];
+    
+                      if(await this.db.has('node:' + next)) {
 
-                        visitedNodes.add(n);
-                    }
-                }
-
-            // then group node pairs into unique edges...
-                var previousNode = null;
-                for(var nodeId of nodes) {
-                    if(await this.db.has('node:' + nodeId)) {
-
-                        if(previousNode) {
-                            if(await this.db.has('node-pair:' + nodeId + '-' + previousNode)) {
-                                var edges = JSON.parse(await this.db.get('node-pair:' + nodeId + '-' + previousNode));
+                        if(prev) {
+                            if(await this.db.has('node-pair:' + next+ '-' + prev)) {
+                                var edges = JSON.parse(await this.db.get('node-pair:' + next+ '-' + prev));
                                 for(var edge of edges) {
                                     
-                                    if(!visitedEdges.has(edge))
+                                    if (previousEdge !== edge) {
                                         visitedEdgeList.push(edge);
-
-                                    visitedEdges.add(edge);
+                                        previousEdge = edge;
+                                    }
                                 }
                             }
                         }
-                        previousNode = nodeId;
+                      }
                     }
-                }     
+                }
             }
     
             if(visitedEdgeList.length > 0) {
