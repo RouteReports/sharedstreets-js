@@ -853,8 +853,6 @@ export class Graph {
             
             if(matches['matchings'] &&  matches['matchings'].length > 0) {
                 
-                var match = matches['matchings'][0];
-
                 // This is a bit messy - we need to go through the legs of the matched journey
                 // and find the edges that we passed through in order
                 // for each leg, iterate through the pairs of nodes and find the corresponding edge
@@ -863,29 +861,31 @@ export class Graph {
                 //console.log(JSON.stringify(match.geometry));
                 var previousEdge = null;
                 // ooof this is brutual -- need to unpack legs and reduce list... 
-                for(var leg of match['legs']) {
-                    //console.log(leg['annotation']['nodes'])
-                    const nodes = leg['annotation']['nodes']
-                    for(var i=0; i < nodes.length - 1; i++){
-                      const prev = nodes[i];
-                      const next = nodes[i + 1];
-    
-                      if(await this.db.has('node:' + next)) {
+                for (var match of matches['matchings']) {
+                  for(var leg of match['legs']) {
+                      //console.log(leg['annotation']['nodes'])
+                      const nodes = leg['annotation']['nodes']
+                      for(var i=0; i < nodes.length - 1; i++){
+                        const prev = nodes[i];
+                        const next = nodes[i + 1];
+      
+                        if(await this.db.has('node:' + next)) {
 
-                        if(prev) {
-                            if(await this.db.has('node-pair:' + next+ '-' + prev)) {
-                                var edges = JSON.parse(await this.db.get('node-pair:' + next+ '-' + prev));
-                                for(var edge of edges) {
-                                    
-                                    if (previousEdge !== edge) {
-                                        visitedEdgeList.push(edge);
-                                        previousEdge = edge;
-                                    }
-                                }
-                            }
+                          if(prev) {
+                              if(await this.db.has('node-pair:' + next+ '-' + prev)) {
+                                  var edges = JSON.parse(await this.db.get('node-pair:' + next+ '-' + prev));
+                                  for(var edge of edges) {
+                                      
+                                      if (previousEdge !== edge) {
+                                          visitedEdgeList.push(edge);
+                                          previousEdge = edge;
+                                      }
+                                  }
+                              }
+                          }
                         }
                       }
-                    }
+                  }
                 }
             }
     
