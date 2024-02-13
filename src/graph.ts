@@ -893,8 +893,8 @@ export class Graph {
                 // Use the first non-null point (in the matches), rather than just the first point from the raw trace
                 // This way, we are guaranteed to get a match if the OSRM matching was successful
                 var firstNonNull = 0, lastNonNull = matches['tracepoints'].length - 1
-                while (!matches['tracepoints'][firstNonNull] && firstNonNull++);
-                while (!matches['tracepoints'][lastNonNull] && lastNonNull--);
+                while (!matches['tracepoints'][firstNonNull] && ++firstNonNull);
+                while (!matches['tracepoints'][lastNonNull] && --lastNonNull);
                 var startPoint = turfHelpers.point(matches['tracepoints'][firstNonNull]['location']);
                 var endPoint = turfHelpers.point(matches['tracepoints'][lastNonNull]['location']);
 
