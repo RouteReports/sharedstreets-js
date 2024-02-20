@@ -434,7 +434,7 @@ export class TileIndex {
             if(p1 == null && p2 == null) {
                 return geomFeature;
             }
-            else if(p1 && p2 == null) {
+            else if(p1 != null && p2 == null) {
                 return along(geomFeature, p1, {"units":"meters"});
             } 
             else if(p1 != null && p2 != null) {
