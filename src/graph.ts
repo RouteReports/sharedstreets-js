@@ -318,6 +318,7 @@ export class PathCandidate {
 	matchedPath:turfHelpers.Feature<turfHelpers.Geometry>;
 
 	sideOfStreet:ReferenceSideOfStreet;
+  tileIds:string[];
 
 
     toDebugView():turfHelpers.FeatureCollection<turfHelpers.Geometry> {
@@ -911,6 +912,7 @@ export class Graph {
                 pathCandidate.score = match.confidence;
                 pathCandidate.originalFeature = feature;
                 pathCandidate.matchedPath = turfHelpers.feature(match.geometry);
+                pathCandidate.tileIds = this.tilePathGroup.tileIds
 
                 //console.log(JSON.stringify(pathCandidate.matchedPath));
 
