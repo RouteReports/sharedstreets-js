@@ -1,11 +1,9 @@
 import { Args, Command, Flags } from '@oclif/core'
 import { readFileSync, writeFileSync } from 'fs';
+import * as turfHelpers from '@turf/helpers';
 
 import { TilePathParams, TileType, TilePathGroup } from '../index'
 import { TileIndex } from '../index'
-import { getTilesForId } from '../tiles';
-
-import geomLength from '@turf/length';
 
 const chalk = require('chalk');
 
@@ -21,49 +19,62 @@ export default class Locate extends Command {
     out: Flags.string({char: 'o', description: 'output file'}),
     'tile-source': Flags.string({description: 'SharedStreets tile source', default: 'osm/planet-181224'}),
     'tile-hierarchy': Flags.integer({description: 'SharedStreets tile hierarchy', default: 6}),
-    'ref': Flags.string({description: 'SharedStreets reference', required: true}),
-    'offset': Flags.string({description: "SharedStreets offset", required: true}),
-    'tile-ids': Flags.string({description: "SharedStreets tile ids as JSON list", required: true})
   }
 
   static args = {
+    inFile: Args.string({name: 'JSON data file', required: true})
   }
 
   async run() {
     const {args, flags} = await this.parse(Locate)
 
+    const inFile = args.inFile;
+    const content = readFileSync(inFile);
+    const data:turfHelpers.FeatureCollection<turfHelpers.Geometry> = JSON.parse(content.toLocaleString());
+
     var outFile = flags.out;
 
+    if(!outFile) 
+      outFile = inFile;
+
+    if(outFile.toLocaleLowerCase().endsWith(".geojson"))
+      outFile = outFile.split(".").slice(0, -1).join(".");
+
     this.log(chalk.bold.keyword('green')('  🗄️  Loading SharedStreets tiles...'));
-    const tileIds = JSON.parse(flags['tile-ids']);
 
     var params = new TilePathParams();
     params.source = flags['tile-source'];
     params.tileHierarchy = flags['tile-hierarchy']
 
+    // Iterate through the items and build a set of all relevant tile ids
+    var tileIds: Set<string> = new Set();
+    for (var feature of data.features) {
+      for (var tileId of feature.properties.shst_tile_ids) {
+        tileIds.add(tileId);
+      }
+    }
+
+    // Load the tiles and index them
     var tilePathGroup = new TilePathGroup();
     tilePathGroup.setParams(params);
-    tilePathGroup.tileIds = tileIds;
+    tilePathGroup.tileIds = Array.from(tileIds);
     tilePathGroup.tileTypes = [TileType.GEOMETRY, TileType.REFERENCE];
 
     var tileIndex = new TileIndex();
 
     await tileIndex.indexTilesByPathGroup(tilePathGroup);
 
-    const ref = flags['ref'];
-    const offset = parseFloat(flags['offset']);
+    this.log(chalk.bold.keyword('green')(`  🔍  Searching data...`));
 
-    this.log(chalk.bold.keyword('green')(`  🔍  Searching data for ref=${ref} and offset=${offset}...`));
-
-    const loc = await tileIndex.geom(ref, offset, null);
-
-    if (outFile) {
-      console.log(chalk.bold.keyword('blue')('  ✏️  Writing output to: ' + outFile + '.out.geojson'));
-      var jsonOut = JSON.stringify(loc);
-      writeFileSync(outFile + '.out.geojson', jsonOut);
+    for (var feature of data.features) {
+      const ref = feature.properties.shst_ref;
+      const offset = feature.properties.shst_offset;
+      const geom = await tileIndex.geom(ref, offset, null);
+      feature.geometry = geom.geometry;
     }
 
-    this.log(chalk.bold.keyword('blue')(`  🗺️  Located point:\n${JSON.stringify(loc, null, 4)}`));
-
+    console.log(chalk.bold.keyword('blue')('  ✏️  Writing output to: ' + outFile + '.out.geojson'));
+    var jsonOut = JSON.stringify(data);
+    writeFileSync(outFile + '.out.geojson', jsonOut);
   }
 }
