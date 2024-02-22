@@ -735,6 +735,8 @@ async function matchLines(outFile, params, lines, flags) {
       segmentGeom.properties['startSideOfStreet'] = path.startPoint.sideOfStreet;
       segmentGeom.properties['endSideOfStreet'] = path.endPoint.sideOfStreet;
 
+      segmentGeom.properties['tileIds'] = path.tileIds;
+
       if(flags['side-of-street-field'] && path.originalFeature.properties[flags['side-of-street-field']]) {
         var sideOfStreetValue = path.originalFeature.properties[flags['side-of-street-field']].toLocaleLowerCase();
         if(flags['left-side-of-street-value'].toLocaleLowerCase() === sideOfStreetValue) {
