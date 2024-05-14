@@ -35,6 +35,7 @@ const MIN_CONFIDENCE = 0.5;
 const OPTIMIZE_GRAPH = true;
 const USE_LOCAL_CACHE = true;
 const SHST_GRAPH_CACHE_DIR = process.env.SHST_CACHE_DIR || resolveHome('~/.shst/cache/graphs/');
+const CUSTOM_OSRM_PROFILES_DIR = resolveHome('~/.shst/custom-osrm-profiles');
 
 
 function getOSRMDirectory() {
@@ -62,7 +63,8 @@ export enum GraphMode {
     CAR_SURFACE_ONLY = 'car_surface_only',
     CAR_MOTORWAY_ONLY = 'car_motorway_only',
     BIKE = 'bike',
-    PEDESTRIAN = 'ped'
+    PEDESTRIAN = 'ped',
+    ROADMAP = 'roadmap'
 }
 
 // interface typecheck for SharedStreetsGeometry
@@ -691,6 +693,9 @@ export class Graph {
                     profile = path.join(OSRM_DIR, 'profiles/bicycle.lua');
                 else if(this.graphMode === GraphMode.PEDESTRIAN)
                     profile = path.join(OSRM_DIR, 'profiles/foot.lua');
+
+                else if(this.graphMode === GraphMode.ROADMAP)
+                    profile = path.join(CUSTOM_OSRM_PROFILES_DIR, 'roadmap.lua');
 
                 execSync(path.join(OSRM_DIR, 'lib/binding/osrm-extract') + ' ' + xmlPath + ' -p ' + profile);
 
