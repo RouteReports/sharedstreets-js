@@ -939,24 +939,17 @@ export class Graph {
                         var edgeGeom = <SharedStreetsGeometry>this.tileIndex.objectIndex.get(pathCandidate.segments[k].geometryId);
                         
                         pathCandidate.segments[k].roadClass = roadClassConverter(edgeGeom.roadClass);
-                        // if start and end are on the same graph edge make sure they're the same referenceId/direction
-                        if(startCandidate.referenceId == endCandidate.referenceId) {
+
+                        if(k == pathCandidate.segments.length - 1) {
                             pathCandidate.endPoint = endCandidate;
-                            pathCandidate.segments[k].section = [startCandidate.location, endCandidate.location];
+                            pathCandidate.segments[k].section = [0, endCandidate.location];
+                        }
+                        else if(k == 0) {
+                            pathCandidate.segments[k].section = [pathCandidate.startPoint.location, pathCandidate.segments[k].referenceLength];
                         }
                         else {
-
-                            if(k == pathCandidate.segments.length - 1) {
-                                pathCandidate.endPoint = endCandidate;
-                                pathCandidate.segments[k].section = [0, endCandidate.location];
-                            }
-                            else if(k == 0) {
-                                pathCandidate.segments[k].section = [pathCandidate.startPoint.location, pathCandidate.segments[k].referenceLength];
-                            }
-                            else {
-                                pathCandidate.segments[k].section = [0, pathCandidate.segments[k].referenceLength];
-                            }
-                        } 
+                            pathCandidate.segments[k].section = [0, pathCandidate.segments[k].referenceLength];
+                        }
                         // put to/from on semgnet
 
                         if(edgeGeom.forwardReferenceId == pathCandidate.segments[k].referenceId) {
@@ -1044,8 +1037,9 @@ export class Graph {
 
             bestPathCandidate.segments = cleanedPath;
             
-            if(cleanedPath.length == 0)
+            if(cleanedPath.length == 0) {
                 return null;
+      }
 
             if(segCoords.length > 0) {
                 var segmentGeoms:turfHelpers.Feature<turfHelpers.MultiLineString> = turfHelpers.multiLineString([]);
