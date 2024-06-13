@@ -924,6 +924,7 @@ export class Graph {
                 pathCandidate.segments = [];
 
                 var length = pathCandidate.getOriginalFeatureLength();
+                var refIds = new Set();
 
                 for(var k = 0; k < visitedEdgeList.length; k++) {
                 
@@ -931,6 +932,7 @@ export class Graph {
                     pathSegment.referenceId = visitedEdgeList[k];
                     var shstRef = <SharedStreetsReference>this.tileIndex.objectIndex.get(visitedEdgeList[k]);
                     pathSegment.referenceId = visitedEdgeList[k];
+                    refIds.add(pathSegment.referenceId);
                     pathSegment.geometryId = shstRef.geometryId; 
                     pathCandidate.segments.push(pathSegment);
                     pathCandidate.segments[k].referenceLength = getReferenceLength(shstRef);
@@ -945,15 +947,21 @@ export class Graph {
                         
                         pathCandidate.segments[k].roadClass = roadClassConverter(edgeGeom.roadClass);
 
-                        if(k == pathCandidate.segments.length - 1) {
-                            pathCandidate.endPoint = endCandidate;
-                            pathCandidate.segments[k].section = [0, endCandidate.location];
-                        }
-                        else if(k == 0) {
-                            pathCandidate.segments[k].section = [pathCandidate.startPoint.location, pathCandidate.segments[k].referenceLength];
+                        if (refIds.size == 1) {
+                          pathCandidate.endPoint = endCandidate;
+                          pathCandidate.segments[k].section = [startCandidate.location, endCandidate.location];
                         }
                         else {
-                            pathCandidate.segments[k].section = [0, pathCandidate.segments[k].referenceLength];
+                          if(k == pathCandidate.segments.length - 1) {
+                              pathCandidate.endPoint = endCandidate;
+                              pathCandidate.segments[k].section = [0, endCandidate.location];
+                          }
+                          else if(k == 0) {
+                              pathCandidate.segments[k].section = [pathCandidate.startPoint.location, pathCandidate.segments[k].referenceLength];
+                          }
+                          else {
+                              pathCandidate.segments[k].section = [0, pathCandidate.segments[k].referenceLength];
+                          }
                         }
                         // put to/from on semgnet
 
