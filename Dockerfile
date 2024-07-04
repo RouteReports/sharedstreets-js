@@ -35,5 +35,7 @@ COPY --from=0 /home/node/*.tgz .
 RUN npm install -g node-pre-gyp && \
     npm install -g *.tgz
 
+COPY --chown=node custom-osrm-profiles/ /home/node/.shst/custom-osrm-profiles
+
 ENTRYPOINT ["shst"]
 CMD ["--help"]

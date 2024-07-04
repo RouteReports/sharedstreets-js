@@ -71,3 +71,6 @@ shst
 
 data
 .DS_Store
+
+*.geojson
+*.json

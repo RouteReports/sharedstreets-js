@@ -35,6 +35,7 @@ const MIN_CONFIDENCE = 0.5;
 const OPTIMIZE_GRAPH = true;
 const USE_LOCAL_CACHE = true;
 const SHST_GRAPH_CACHE_DIR = process.env.SHST_CACHE_DIR || resolveHome('~/.shst/cache/graphs/');
+const CUSTOM_OSRM_PROFILES_DIR = resolveHome('~/.shst/custom-osrm-profiles');
 
 
 function getOSRMDirectory() {
@@ -62,7 +63,8 @@ export enum GraphMode {
     CAR_SURFACE_ONLY = 'car_surface_only',
     CAR_MOTORWAY_ONLY = 'car_motorway_only',
     BIKE = 'bike',
-    PEDESTRIAN = 'ped'
+    PEDESTRIAN = 'ped',
+    ROADMAP = 'roadmap'
 }
 
 // interface typecheck for SharedStreetsGeometry
@@ -692,6 +694,9 @@ export class Graph {
                 else if(this.graphMode === GraphMode.PEDESTRIAN)
                     profile = path.join(OSRM_DIR, 'profiles/foot.lua');
 
+                else if(this.graphMode === GraphMode.ROADMAP)
+                    profile = path.join(CUSTOM_OSRM_PROFILES_DIR, 'roadmap.lua');
+
                 execSync(path.join(OSRM_DIR, 'lib/binding/osrm-extract') + ' ' + xmlPath + ' -p ' + profile);
 
                 var osrmPath:any = xmlPath + '.osrm';
@@ -919,6 +924,7 @@ export class Graph {
                 pathCandidate.segments = [];
 
                 var length = pathCandidate.getOriginalFeatureLength();
+                var refIds = new Set();
 
                 for(var k = 0; k < visitedEdgeList.length; k++) {
                 
@@ -926,6 +932,7 @@ export class Graph {
                     pathSegment.referenceId = visitedEdgeList[k];
                     var shstRef = <SharedStreetsReference>this.tileIndex.objectIndex.get(visitedEdgeList[k]);
                     pathSegment.referenceId = visitedEdgeList[k];
+                    refIds.add(pathSegment.referenceId);
                     pathSegment.geometryId = shstRef.geometryId; 
                     pathCandidate.segments.push(pathSegment);
                     pathCandidate.segments[k].referenceLength = getReferenceLength(shstRef);
@@ -940,15 +947,21 @@ export class Graph {
                         
                         pathCandidate.segments[k].roadClass = roadClassConverter(edgeGeom.roadClass);
 
-                        if(k == pathCandidate.segments.length - 1) {
-                            pathCandidate.endPoint = endCandidate;
-                            pathCandidate.segments[k].section = [0, endCandidate.location];
-                        }
-                        else if(k == 0) {
-                            pathCandidate.segments[k].section = [pathCandidate.startPoint.location, pathCandidate.segments[k].referenceLength];
+                        if (refIds.size == 1) {
+                          pathCandidate.endPoint = endCandidate;
+                          pathCandidate.segments[k].section = [startCandidate.location, endCandidate.location];
                         }
                         else {
-                            pathCandidate.segments[k].section = [0, pathCandidate.segments[k].referenceLength];
+                          if(k == pathCandidate.segments.length - 1) {
+                              pathCandidate.endPoint = endCandidate;
+                              pathCandidate.segments[k].section = [0, endCandidate.location];
+                          }
+                          else if(k == 0) {
+                              pathCandidate.segments[k].section = [pathCandidate.startPoint.location, pathCandidate.segments[k].referenceLength];
+                          }
+                          else {
+                              pathCandidate.segments[k].section = [0, pathCandidate.segments[k].referenceLength];
+                          }
                         }
                         // put to/from on semgnet
 

@@ -72,6 +72,7 @@ export default class Match extends Command {
     'match-pedestrian': Flags.boolean({description: 'match using pedestrian routing rules', default:false}),
     'match-motorway-only': Flags.boolean({description: 'only match against motorway segments', default:false}),
     'match-surface-streets-only': Flags.boolean({description: 'only match against surface street segments', default:false}),
+    'match-roadmap': Flags.boolean({description: 'match using the road map profile', default:false}),
     'offset-line': Flags.integer({description: 'offset geometry based on direction of matched line (in meters)'}),
     'cluster-points': Flags.integer({description: 'aproximate sub-segment length for clustering points (in meters)'}),
 
@@ -127,6 +128,9 @@ export default class Match extends Command {
       }
       if(flags['match-motorway-only'])
         console.log(chalk.bold.keyword('orange')('       Ignoring motorway-only setting'));
+    }
+    else if (flags['match-roadmap']) {
+      console.log(chalk.bold.keyword('green')('       Matching using road map profile'));
     }
     else if(flags['match-car']) {
       if(flags['match-motorway-only'])
@@ -801,6 +805,8 @@ async function matchLines(outFile, params, lines, flags) {
     graphMode = GraphMode.BIKE;
   else if(flags['match-pedestrian'])
     graphMode = GraphMode.PEDESTRIAN;
+  else if(flags['match-roadmap'])
+    graphMode = GraphMode.ROADMAP;
   else if(flags['match-car']) {
     if(flags['match-motorway-only'])
       graphMode = GraphMode.CAR_MOTORWAY_ONLY;
