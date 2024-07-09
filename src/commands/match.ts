@@ -1,5 +1,6 @@
 import { Args, Command, Flags } from '@oclif/core'
-import { readFileSync, writeFileSync, existsSync } from 'fs';
+import { readFileSync, writeFileSync, existsSync, createWriteStream } from 'fs';
+import { JsonStreamStringify } from 'json-stream-stringify';
 
 import { TilePathParams, TileType, TilePathGroup } from '../index'
 import { TileIndex } from '../index'
@@ -957,8 +958,9 @@ async function matchLines(outFile, params, lines, flags) {
   if(matchedLines && matchedLines.length) {
     console.log(chalk.bold.keyword('blue')('  ✏️  Writing ' + matchedLines.length + ' matched edges: ' + outFile + ".matched.geojson"));
     var matchedFeatureCollection:turfHelpers.FeatureCollection<turfHelpers.LineString> = turfHelpers.featureCollection(matchedLines);
-    var matchedJsonOut = JSON.stringify(matchedFeatureCollection);
-    writeFileSync(outFile + ".matched.geojson", matchedJsonOut);
+    const writableStream = createWriteStream(outFile + ".matched.geojson");
+    const jsonStream = new JsonStreamStringify(matchedFeatureCollection);
+    jsonStream.pipe(writableStream);
   }
 
   if(unmatchedLines && unmatchedLines.length ) {
