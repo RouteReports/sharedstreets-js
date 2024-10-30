@@ -838,8 +838,13 @@ export class Graph {
             throw "Graph not buit. call buildGraph() before running queries."
         
         
+        // Make sure there isn't a z coord
+        var coords = feature.geometry.coordinates.map(function(val) {
+          return val.slice(0, 2);
+        });
+
         var hmmOptions = {
-            coordinates: feature.geometry.coordinates,
+            coordinates: coords,
             annotations: true,
             geometries: 'geojson',
             radiuses: Array(feature.geometry.coordinates.length).fill(this.searchRadius)
