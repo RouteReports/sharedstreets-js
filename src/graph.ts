@@ -558,11 +558,11 @@ export class Graph {
                     }
                 }
 
-                if(obj.roadClass == 'Other') {
-                    if(this.graphMode != GraphMode.BIKE && this.graphMode != GraphMode.PEDESTRIAN) {
-                        continue;
-                    }
-                }
+                //if(obj.roadClass == 'Other') {
+                //    if(this.graphMode != GraphMode.BIKE && this.graphMode != GraphMode.PEDESTRIAN) {
+                //        continue;
+                //    }
+                //}
 
                 // iterate through coordinates and build nodes
                 var coords:number[][] = lonlatsToCoords(obj.lonlats);
@@ -621,8 +621,10 @@ export class Graph {
                 var oneWay = obj.backReferenceId ? 'no' : 'yes';
                 var roadClass = obj.roadClass.toLocaleLowerCase();
 
-                if(roadClass == "other")
-                    roadClass = "path"; // TODO add bike/ped modal restrictions to paths 
+                // Convert other to unclassified - filtering is done when building the basemap so we don't want to exclude anything
+                if(roadClass == "other") {
+                    roadClass = "unclassified"; // TODO add bike/ped modal restrictions to paths 
+                }
 
                 osmRootElem.push({way:[{_attr:{id:nextEdgeId}},{tag:{_attr:{k:'highway', v:roadClass}}},{tag:{_attr:{k:'oneway', v:oneWay}}},...nodeIdElems]});
 
