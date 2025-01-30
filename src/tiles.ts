@@ -5,6 +5,7 @@ import {SharedStreetsIntersection, SharedStreetsGeometry } from 'sharedstreets-t
 import * as turfHelpers from '@turf/helpers';
 import bbox from "@turf/bbox";
 import destination from '@turf/destination';
+import buffer from '@turf/buffer';
 import { existsSync, mkdirSync, writeFileSync, readFileSync } from 'fs';
 
 import { getJson, getPbf, resolveHome } from "./util";
@@ -257,11 +258,12 @@ export class TilePathGroup extends TilePathParams  {
         this.addTileId(path.tileId);
     }
 
-    static fromPolygon(polygon:turfHelpers.Feature<turfHelpers.Polygon>, buffer:number, params:TilePathParams):TilePathGroup {
+    static fromPolygon(polygon:turfHelpers.Feature<turfHelpers.Polygon>, buf:number, params:TilePathParams):TilePathGroup {
 
         var tilePathGroup = new TilePathGroup();
         tilePathGroup.setParams(params);
-        tilePathGroup.tileIds = getTileIdsForPolygon(polygon);
+        var bufferedPolygon = buffer(polygon, buf, {units: "metres"})
+        tilePathGroup.tileIds = getTileIdsForPolygon(bufferedPolygon);
 
         return tilePathGroup;
     }
