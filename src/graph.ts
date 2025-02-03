@@ -1002,6 +1002,7 @@ export class Graph {
             }
         }
         catch(e) {
+      console.error(e)
             // no-op failed to match
         }
         
